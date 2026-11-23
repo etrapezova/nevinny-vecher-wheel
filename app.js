@@ -2,6 +2,8 @@
   const songs = globalThis.VECHER_SONGS;
   const rules = globalThis.VecherWheel;
   const catalog = new Map(songs.map((song) => [song.id, song]));
+  const proposers = [...new Set(songs.flatMap((song) => song.authors))]
+    .sort((a, b) => a.localeCompare(b, "ru"));
   const $ = (id) => document.getElementById(id);
   const title = $("title");
   const titleSlot = title.parentElement;
@@ -13,12 +15,14 @@
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
   const palette = ["#7d359c", "#a63c83", "#4c4ac5", "#337c9f", "#a84b9d", "#5944a9", "#336b9f", "#97487e"];
   const state = rules.restore({ getItem: (key) => localStorage.getItem(key) }, catalog);
-  $("proposer-count").textContent = new Set(songs.flatMap((song) => song.authors)).size;
+  $("proposer-count").textContent = proposers.length;
   $("reaction-count").textContent = globalThis.VECHER_REACTION_COUNT;
   let active = [];
   let angle = 0;
   let spinning = false;
   let showing = state.draws.at(-1) ?? null;
+  let previousDrawn = new Set();
+  let buyers = [];
   let celebrationFrame = 0;
   let audio;
 
@@ -53,18 +57,42 @@
     fitTitle();
   }
 
-  function render() {
+  function renderParticipants(highlightNew) {
+    const { waiting, drawn } = rules.participantProgress(proposers, state.draws, catalog);
+    for (const [group, names] of [["waiting", waiting], ["drawn", drawn]]) {
+      $(`${group}-count`).textContent = names.length;
+      $(`${group}-empty`).hidden = names.length > 0;
+      $(`${group}-people`).replaceChildren(...names.map((name) => {
+        const chip = document.createElement("li");
+        chip.textContent = name;
+        if (highlightNew && group === "drawn" && !previousDrawn.has(name)) chip.classList.add("newly-drawn");
+        return chip;
+      }));
+    }
+    previousDrawn = new Set(drawn);
+  }
+
+  function render(highlightNew = false) {
     const sungIds = new Set(state.draws.filter((draw) => draw.sung).map((draw) => draw.id));
     active = songs.filter((song) => !sungIds.has(song.id));
     const result = showing && catalog.get(showing.id);
     $("remaining").textContent = active.length;
     $("sung-count").textContent = sungIds.size;
-    $("status").textContent = result ? (showing.sung ? "Спели!" : "Выпала песня") : "Розыгрыш";
+    $("status").textContent = result ? (showing.sung ? "Спели!" : showing.buyer ? "Песня за жетон" : "Выпала песня") : "Розыгрыш";
     labelSong(result);
-    $("description").textContent = result
-      ? `Предложили: ${result.authors.join(", ")} · Реакции на заявки: ${result.reactions}`
-      : active.length ? "Крути колесо и узнай, какая песня прозвучит следующей." : "Можно сбросить вечер и сыграть ещё раз.";
+    $("description").hidden = Boolean(result);
+    $("description").textContent = active.length
+      ? "Крути колесо и узнай, какая песня прозвучит следующей."
+      : "Можно сбросить вечер и сыграть ещё раз.";
+    $("result-details").hidden = !result;
+    if (result) {
+      $("result-authors").textContent = result.authors.join(", ");
+      $("result-reactions").textContent = result.reactions;
+    }
+    renderParticipants(highlightNew);
+    buyers = proposers.filter((name) => rules.songsForToken(name, active, state.draws).length > 0);
     $("spin").disabled = !active.length;
+    $("buy").disabled = !buyers.length;
     $("spin").textContent = result ? "Крутить ещё" : "Крутить колесо";
     $("sung").hidden = !result || showing.sung;
     $("undo").hidden = !sungIds.size;
@@ -79,7 +107,9 @@
       const name = document.createElement("span");
       name.textContent = `${state.draws.length - index}. ${song.artist} · ${song.title}`;
       const status = document.createElement("span");
-      status.textContent = draw.sung ? "Спели" : "Выпала";
+      status.textContent = draw.buyer
+        ? (draw.sung ? "Спели · За жетон" : "За жетон")
+        : (draw.sung ? "Спели" : "Выпала");
       item.append(name, status);
       return item;
     }));
@@ -210,9 +240,11 @@
     const winner = rules.pick(active, state.draws, catalog);
     unlockAudio();
     spinning = true;
-    $("spin").disabled = $("reset").disabled = $("undo").disabled = true;
+    $("spin").disabled = $("buy").disabled = $("reset").disabled = $("undo").disabled = true;
     $("sung").hidden = true;
     $("status").textContent = "Колесо крутится";
+    $("result-details").hidden = true;
+    $("description").hidden = false;
     $("description").textContent = "Сейчас узнаем, что поём.";
     $("announcement").textContent = "Колесо крутится";
     const start = angle;
@@ -225,18 +257,7 @@
     let pointerTilt = 0;
 
     function finish() {
-      angle = rules.wrap(target);
-      pointer.style.removeProperty("--pointer-tilt");
-      showing = { id: winner.id, sung: false };
-      state.draws.push(showing);
-      save();
-      spinning = false;
-      $("undo").disabled = false;
-      render();
-      $("spin").focus();
-      $("announcement").textContent = `Выпала песня ${winner.artist}, ${winner.title}`;
-      [440, 554, 659].forEach((hz, index) => tone(hz, .28, .075, index * .085));
-      confetti();
+      showPick(winner, target);
     }
     if (reduced.matches) {
       finish();
@@ -272,6 +293,56 @@
     }
     requestAnimationFrame(frame);
   }
+
+  function showPick(song, target, buyer) {
+    angle = rules.wrap(target);
+    pointer.style.removeProperty("--pointer-tilt");
+    showing = buyer ? { id: song.id, sung: false, buyer } : { id: song.id, sung: false };
+    state.draws.push(showing);
+    save();
+    spinning = false;
+    $("undo").disabled = false;
+    render(true);
+    $("spin").focus();
+    const label = buyer ? "Песня за жетон" : "Выпала песня";
+    $("announcement").textContent = `${label}: ${song.artist}, ${song.title}`;
+    [440, 554, 659].forEach((hz, index) => tone(hz, .28, .075, index * .085));
+    confetti();
+  }
+
+  function setOptions(select, entries, placeholder) {
+    const prompt = new Option(placeholder, "", true, true);
+    prompt.disabled = true;
+    select.replaceChildren(prompt, ...entries.map(([value, label]) => new Option(label, value)));
+  }
+
+  function updatePurchaseSongs() {
+    const eligible = rules.songsForToken($("buyer").value, active, state.draws);
+    setOptions($("buy-song"), eligible.map((song) => [song.id, `${song.artist} · ${song.title}`]), "Выбрать песню");
+    $("buy-song").disabled = !eligible.length;
+    $("buy-confirm").disabled = true;
+  }
+
+  $("buy").addEventListener("click", () => {
+    if (spinning || !buyers.length) return;
+    setOptions($("buyer"), buyers.map((name) => [name, name]), "Выбрать участника");
+    updatePurchaseSongs();
+    $("buy-dialog").showModal();
+  });
+  $("buyer").addEventListener("change", updatePurchaseSongs);
+  $("buy-song").addEventListener("change", () => { $("buy-confirm").disabled = !$("buy-song").value; });
+  $("buy-cancel").addEventListener("click", () => $("buy-dialog").close());
+  $("buy-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    if (spinning || !$("buy-dialog").open) return;
+    const buyer = $("buyer").value;
+    const songId = $("buy-song").value;
+    const song = rules.songsForToken(buyer, active, state.draws).find((candidate) => candidate.id === songId);
+    if (!song) return;
+    unlockAudio();
+    $("buy-dialog").close();
+    showPick(song, rules.targetAngle(angle, active.indexOf(song), active.length), buyer);
+  });
 
   $("spin").addEventListener("click", spin);
   $("sung").addEventListener("click", () => {

@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#100c20">
   <meta name="description" content="Музыкальное колесо Невинного вечера">
   <title>Колесо · Невинный вечер</title>
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=6">
   <script src="songs.js?v=5" defer></script>
-  <script src="wheel.js?v=3" defer></script>
-  <script src="app.js?v=5" defer></script>
+  <script src="wheel.js?v=6" defer></script>
+  <script src="app.js?v=6" defer></script>
 </head>
 <body>
   <header class="topbar wrap">
@@ -20,6 +20,11 @@
     </div>
   </header>
   <main class="wrap">
+    <section class="catalog-summary" aria-labelledby="catalog-summary-title">
+      <h2 id="catalog-summary-title">Музыкальные пожелания</h2>
+      <p><strong id="proposer-count"></strong> человек предложили песни</p>
+      <p><strong id="reaction-count"></strong> реакций в чате</p>
+    </section>
     <div class="layout">
       <section class="stage" aria-label="Колесо песен">
         <div class="stage-top"><span class="marker-dot"></span><span>Музыкальная рулетка</span></div>
@@ -28,33 +33,24 @@
           <div class="hub" aria-hidden="true"><i class="wave"><b></b><b></b><b></b><b></b></i></div>
           <div class="pointer" aria-hidden="true"></div>
         </div>
-        <div class="stats">
-          <section class="stats-panel" aria-labelledby="evening-stats">
-            <h2 id="evening-stats">Этот вечер</h2>
-            <dl>
-              <div><dt>Осталось песен</dt><dd id="remaining"></dd></div>
-              <div><dt>Уже спели</dt><dd id="sung-count"></dd></div>
-            </dl>
-          </section>
-          <section class="stats-panel stats-panel-source" aria-labelledby="telegram-stats">
-            <h2 id="telegram-stats">Заявки из Telegram</h2>
-            <dl>
-              <div><dt>Песни прислали</dt><dd><span id="proposer-count"></span> <span class="stats-unit">человек</span></dd></div>
-              <div><dt title="Все реакции на сообщения с песнями из колеса">Реакции на заявки</dt><dd id="reaction-count"></dd></div>
-            </dl>
-          </section>
-        </div>
       </section>
       <section class="deck" aria-label="Управление колесом">
         <div class="play">
           <div class="caption"><span class="marker-dot"></span><span id="status">Розыгрыш</span></div>
           <p class="artist" id="artist"></p>
           <div class="title-slot"><h1 id="title">Что споём?</h1></div>
-          <p class="description" id="description">Крути колесо и узнай, какая песня прозвучит следующей.</p>
+          <div class="description">
+            <p id="description">Крути колесо и узнай, какая песня прозвучит следующей.</p>
+            <dl class="result-details" id="result-details" hidden>
+              <div><dt>Кто предложил</dt><dd id="result-authors"></dd></div>
+              <div><dt>Реакции в чате</dt><dd id="result-reactions"></dd></div>
+            </dl>
+          </div>
           <div class="actions">
             <button id="spin" class="primary" type="button">Крутить колесо</button>
             <button id="sung" class="secondary" type="button" hidden>Спели</button>
           </div>
+          <button id="buy" class="text-button" type="button">Купить песню</button>
           <div id="announcement" role="status" class="sr-only"></div>
         </div>
         <section class="history" aria-labelledby="history-title">
@@ -67,14 +63,47 @@
           <button id="undo" class="text-button undo" type="button" hidden>Вернуть последнюю спетую</button>
         </section>
       </section>
+      <section class="stats-panel" aria-labelledby="evening-stats">
+        <h2 id="evening-stats">Этот вечер</h2>
+        <dl>
+          <div><dt>Осталось песен</dt><dd id="remaining"></dd></div>
+          <div><dt>Уже спели</dt><dd id="sung-count"></dd></div>
+        </dl>
+        <div class="participants">
+          <div class="people-group">
+            <h3 id="waiting-label">Кто ещё ждёт свою песню <span id="waiting-count"></span></h3>
+            <ul id="waiting-people" aria-labelledby="waiting-label"></ul>
+            <p id="waiting-empty" hidden>Все дождались своей песни.</p>
+          </div>
+          <div class="people-group people-group-drawn">
+            <h3 id="drawn-label">Чьи песни уже выбрали <span id="drawn-count"></span></h3>
+            <ul id="drawn-people" aria-labelledby="drawn-label"></ul>
+            <p id="drawn-empty">Пока ни одной.</p>
+          </div>
+        </div>
+      </section>
     </div>
     <p id="storage-note" class="storage-note" hidden>Браузер не сохраняет историю после закрытия страницы.</p>
   </main>
   <canvas id="confetti" aria-hidden="true"></canvas>
+  <dialog id="buy-dialog" aria-labelledby="buy-title">
+    <form id="buy-form">
+      <h2 id="buy-title">Купить песню</h2>
+      <p>У каждого один шуточный жетон на вечер. За него можно выбрать свою песню из оставшихся в колесе.</p>
+      <label for="buyer">Кто покупает</label>
+      <select id="buyer" required autofocus></select>
+      <label for="buy-song">Какую песню поём</label>
+      <select id="buy-song" required></select>
+      <div class="actions">
+        <button id="buy-cancel" class="secondary" type="button">Отмена</button>
+        <button id="buy-confirm" class="primary" type="submit">Купить за 1 жетон</button>
+      </div>
+    </form>
+  </dialog>
   <dialog id="reset-dialog">
     <form method="dialog">
       <h2>Начать вечер заново?</h2>
-      <p>История очистится, все песни снова будут в колесе.</p>
+      <p>История очистится, песни вернутся в колесо, а жетоны снова будут доступны.</p>
       <div class="actions"><button class="secondary" value="cancel" autofocus>Отмена</button><button class="primary" value="reset">Сбросить вечер</button></div>
     </form>
   </dialog>

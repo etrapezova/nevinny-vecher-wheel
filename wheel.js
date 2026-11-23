@@ -23,6 +23,22 @@
     return songs.at(-1);
   }
 
+  function participantProgress(proposers, draws, catalog) {
+    const seen = new Set();
+    for (const draw of draws) {
+      for (const author of catalog.get(draw.id)?.authors ?? []) seen.add(author);
+    }
+    return {
+      waiting: proposers.filter((name) => !seen.has(name)),
+      drawn: proposers.filter((name) => seen.has(name)),
+    };
+  }
+
+  function songsForToken(author, active, draws) {
+    if (!author || draws.some((draw) => draw.buyer === author)) return [];
+    return active.filter((song) => song.authors.includes(author));
+  }
+
   function targetAngle(angle, index, count) {
     const center = -turn * (index + 0.5) / count;
     return angle + 6 * turn + wrap(center - angle);
@@ -81,12 +97,12 @@
       if (!saved || !Array.isArray(saved.draws)) return initial();
       const draws = saved.draws
         .filter((draw) => draw && catalog.has(draw.id) && typeof draw.sung === "boolean")
-        .map(({ id, sung }) => ({ id, sung }));
+        .map(({ id, sung, buyer }) => catalog.get(id).authors.includes(buyer) ? { id, sung, buyer } : { id, sung });
       return { draws, muted: saved.muted === true };
     } catch {
       return initial();
     }
   }
 
-  globalThis.VecherWheel = { weight, pick, targetAngle, indexAt, spinMotion, wrap, storageKey, restore };
+  globalThis.VecherWheel = { weight, pick, participantProgress, songsForToken, targetAngle, indexAt, spinMotion, wrap, storageKey, restore };
 })();
