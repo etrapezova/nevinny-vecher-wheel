@@ -237,7 +237,7 @@
 
   function spin() {
     if (spinning || !active.length) return;
-    const winner = rules.pick(active, state.draws, catalog);
+    const winner = rules.pickEveningSong(active, state.draws, catalog);
     unlockAudio();
     spinning = true;
     $("spin").disabled = $("buy").disabled = $("reset").disabled = $("undo").disabled = true;

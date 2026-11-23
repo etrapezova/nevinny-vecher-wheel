@@ -23,11 +23,37 @@
     return songs.at(-1);
   }
 
-  function participantProgress(proposers, draws, catalog) {
+  function drawnProposers(draws, catalog) {
     const seen = new Set();
     for (const draw of draws) {
       for (const author of catalog.get(draw.id)?.authors ?? []) seen.add(author);
     }
+    return seen;
+  }
+
+  function pickEveningSong(songs, history, catalog, random = Math.random) {
+    if (!songs.length) return null;
+    if (random() < 1 / 3) {
+      const seen = drawnProposers(history, catalog);
+      const waitingSongs = new Map();
+      for (const song of songs) {
+        for (const author of song.authors) {
+          if (seen.has(author)) continue;
+          if (!waitingSongs.has(author)) waitingSongs.set(author, []);
+          waitingSongs.get(author).push(song);
+        }
+      }
+      if (waitingSongs.size) {
+        const choices = [...waitingSongs.values()];
+        const selected = choices[Math.floor(random() * choices.length)];
+        return pick(selected, history, catalog, random);
+      }
+    }
+    return pick(songs, history, catalog, random);
+  }
+
+  function participantProgress(proposers, draws, catalog) {
+    const seen = drawnProposers(draws, catalog);
     return {
       waiting: proposers.filter((name) => !seen.has(name)),
       drawn: proposers.filter((name) => seen.has(name)),
@@ -104,5 +130,5 @@
     }
   }
 
-  globalThis.VecherWheel = { weight, pick, participantProgress, songsForToken, targetAngle, indexAt, spinMotion, wrap, storageKey, restore };
+  globalThis.VecherWheel = { weight, pick, pickEveningSong, participantProgress, songsForToken, targetAngle, indexAt, spinMotion, wrap, storageKey, restore };
 })();
