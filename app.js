@@ -62,7 +62,7 @@
     $("status").textContent = result ? (showing.sung ? "Спели!" : "Выпала песня") : "Розыгрыш";
     labelSong(result);
     $("description").textContent = result
-      ? `Предложили: ${result.authors.join(", ")} · Голоса: ${result.estimated ? "≈" : ""}${result.votes}`
+      ? `Предложили: ${result.authors.join(", ")} · Реакции на заявки: ${result.reactions}`
       : active.length ? "Крути колесо и узнай, какая песня прозвучит следующей." : "Можно сбросить вечер и сыграть ещё раз.";
     $("spin").disabled = !active.length;
     $("spin").textContent = result ? "Крутить ещё" : "Крутить колесо";

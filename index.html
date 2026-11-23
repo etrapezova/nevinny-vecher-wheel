@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#100c20">
   <meta name="description" content="Музыкальное колесо Невинного вечера">
   <title>Колесо · Невинный вечер</title>
-  <link rel="stylesheet" href="style.css?v=4">
-  <script src="songs.js?v=4" defer></script>
+  <link rel="stylesheet" href="style.css?v=5">
+  <script src="songs.js?v=5" defer></script>
   <script src="wheel.js?v=3" defer></script>
-  <script src="app.js?v=4" defer></script>
+  <script src="app.js?v=5" defer></script>
 </head>
 <body>
   <header class="topbar wrap">
@@ -28,12 +28,22 @@
           <div class="hub" aria-hidden="true"><i class="wave"><b></b><b></b><b></b><b></b></i></div>
           <div class="pointer" aria-hidden="true"></div>
         </div>
-        <dl class="stats" aria-label="Статистика вечера">
-          <div><dt>Осталось песен</dt><dd id="remaining"></dd></div>
-          <div><dt>Уже спели</dt><dd id="sung-count"></dd></div>
-          <div><dt>Предложили песни</dt><dd id="proposer-count"></dd></div>
-          <div><dt title="Все эмодзи на сообщениях с песнями из колеса">Реакций на песни</dt><dd id="reaction-count"></dd></div>
-        </dl>
+        <div class="stats">
+          <section class="stats-panel" aria-labelledby="evening-stats">
+            <h2 id="evening-stats">Этот вечер</h2>
+            <dl>
+              <div><dt>Осталось песен</dt><dd id="remaining"></dd></div>
+              <div><dt>Уже спели</dt><dd id="sung-count"></dd></div>
+            </dl>
+          </section>
+          <section class="stats-panel stats-panel-source" aria-labelledby="telegram-stats">
+            <h2 id="telegram-stats">Заявки из Telegram</h2>
+            <dl>
+              <div><dt>Песни прислали</dt><dd><span id="proposer-count"></span> <span class="stats-unit">человек</span></dd></div>
+              <div><dt title="Все реакции на сообщения с песнями из колеса">Реакции на заявки</dt><dd id="reaction-count"></dd></div>
+            </dl>
+          </section>
+        </div>
       </section>
       <section class="deck" aria-label="Управление колесом">
         <div class="play">

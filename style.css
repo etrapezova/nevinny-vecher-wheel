@@ -51,11 +51,15 @@ button:disabled { cursor: default; opacity: .48; }
 }
 .stage-top, .caption { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: .88rem; font-weight: 700; letter-spacing: .11em; text-transform: uppercase; }
 .marker-dot { width: 8px; height: 8px; flex: 0 0 auto; border-radius: 50%; background: var(--pink); box-shadow: 0 0 13px #ff58b8; }
-.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin: 0; padding-top: 16px; border-top: 1px solid #513769; }
-.stats div { display: grid; align-content: start; gap: 4px; }
-.stats dd { grid-row: 1; margin: 0; color: var(--cyan); font-size: clamp(1.25rem, 2.5vw, 1.95rem); font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
-.stats div:first-child dd { color: var(--pink); }
-.stats dt { color: var(--muted); font-size: .875rem; line-height: 1.25; }
+.stats { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 16px; }
+.stats-panel { padding: 12px; border: 1px solid #513769; border-radius: 12px; background: #170f2880; }
+.stats-panel h2 { font-size: .875rem; font-weight: 750; color: var(--pink); margin: 0 0 12px; }
+.stats-panel-source h2 { color: var(--cyan); }
+.stats-panel dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0; }
+.stats-panel dl div { display: grid; align-content: start; gap: 4px; }
+.stats-panel dd { grid-row: 1; margin: 0; color: var(--ink); font-size: clamp(1.2rem, 2.1vw, 1.65rem); font-weight: 800; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.stats-panel dt, .stats-unit { color: var(--muted); font-size: .875rem; line-height: 1.25; }
+.stats-unit { font-weight: 500; }
 .disc { align-self: center; width: min(100%, 61vh, 570px); aspect-ratio: 1; position: relative; border-radius: 50%; filter: drop-shadow(0 0 28px #c555f444); }
 #wheel { display: block; width: 100%; height: 100%; border-radius: 50%; }
 .hub { position: absolute; inset: 40%; border-radius: 50%; display: grid; place-items: center; border: 1px solid #edbfffba; background: radial-gradient(circle at 40% 40%, #422957, #181023 70%); box-shadow: 0 0 22px #11051d, inset 0 0 18px #d696ff40; }
@@ -108,6 +112,6 @@ dialog p { margin-block: 12px 20px; color: var(--muted); }
   .deck { padding-top: 12px; }
   .description { height: 4.35em; }
 }
-@media (max-width: 460px) {
-  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 880px) and (min-width: 681px), (max-width: 460px) {
+  .stats { grid-template-columns: minmax(0, 1fr); gap: 10px; }
 }
