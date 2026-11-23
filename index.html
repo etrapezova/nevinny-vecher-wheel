@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#100c20">
   <meta name="description" content="Музыкальное колесо Невинного вечера">
   <title>Колесо · Невинный вечер</title>
-  <link rel="stylesheet" href="style.css?v=3">
-  <script src="songs.js" defer></script>
+  <link rel="stylesheet" href="style.css?v=4">
+  <script src="songs.js?v=4" defer></script>
   <script src="wheel.js?v=3" defer></script>
-  <script src="app.js?v=3" defer></script>
+  <script src="app.js?v=4" defer></script>
 </head>
 <body>
   <header class="topbar wrap">
@@ -28,7 +28,12 @@
           <div class="hub" aria-hidden="true"><i class="wave"><b></b><b></b><b></b><b></b></i></div>
           <div class="pointer" aria-hidden="true"></div>
         </div>
-        <div class="stage-bottom"><span id="remaining"></span><span class="signal" aria-hidden="true"></span></div>
+        <dl class="stats" aria-label="Статистика вечера">
+          <div><dt>Осталось песен</dt><dd id="remaining"></dd></div>
+          <div><dt>Уже спели</dt><dd id="sung-count"></dd></div>
+          <div><dt>Предложили песни</dt><dd id="proposer-count"></dd></div>
+          <div><dt title="Все эмодзи на сообщениях с песнями из колеса">Реакций на песни</dt><dd id="reaction-count"></dd></div>
+        </dl>
       </section>
       <section class="deck" aria-label="Управление колесом">
         <div class="play">

@@ -13,6 +13,8 @@
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
   const palette = ["#7d359c", "#a63c83", "#4c4ac5", "#337c9f", "#a84b9d", "#5944a9", "#336b9f", "#97487e"];
   const state = rules.restore({ getItem: (key) => localStorage.getItem(key) }, catalog);
+  $("proposer-count").textContent = new Set(songs.flatMap((song) => song.authors)).size;
+  $("reaction-count").textContent = globalThis.VECHER_REACTION_COUNT;
   let active = [];
   let angle = 0;
   let spinning = false;
@@ -55,7 +57,8 @@
     const sungIds = new Set(state.draws.filter((draw) => draw.sung).map((draw) => draw.id));
     active = songs.filter((song) => !sungIds.has(song.id));
     const result = showing && catalog.get(showing.id);
-    $("remaining").textContent = `В колесе: ${active.length} из ${songs.length}`;
+    $("remaining").textContent = active.length;
+    $("sung-count").textContent = sungIds.size;
     $("status").textContent = result ? (showing.sung ? "Спели!" : "Выпала песня") : "Розыгрыш";
     labelSong(result);
     $("description").textContent = result

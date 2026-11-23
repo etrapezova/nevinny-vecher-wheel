@@ -147,3 +147,6 @@ globalThis.VECHER_SONGS = [
   {"id":"song-146","artist":"Маша и Медведи","title":"Земля","authors":["Ира Одинцова"],"votes":1,"estimated":false},
   {"id":"song-147","artist":"Александр Розенбаум","title":"Заходите к нам на огонёк","authors":["Ира Одинцова"],"votes":0,"estimated":false}
 ];
+
+// Total emoji reactions across the 138 distinct Telegram messages behind this catalog.
+globalThis.VECHER_REACTION_COUNT = 607;
