@@ -7,6 +7,7 @@
   const titleSlot = title.parentElement;
   const titleSizes = new Map();
   const canvas = $("wheel");
+  const pointer = document.querySelector(".pointer");
   const paint = canvas.getContext("2d");
   const celebration = $("confetti");
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
@@ -217,9 +218,12 @@
     const startTime = performance.now();
     let previousIndex = -1;
     let previousTick = 0;
+    let slowing = false;
+    let pointerTilt = 0;
 
     function finish() {
       angle = rules.wrap(target);
+      pointer.style.removeProperty("--pointer-tilt");
       showing = { id: winner.id, sung: false };
       state.draws.push(showing);
       save();
@@ -241,10 +245,19 @@
         finish();
         return;
       }
+      if (!slowing && elapsed >= motion.slowAt) {
+        slowing = true;
+        $("status").textContent = "Колесо замедляется…";
+      }
       angle = motion.angleAt(elapsed);
+      const tilt = motion.pointerAt(elapsed);
+      if (tilt !== pointerTilt) {
+        pointerTilt = tilt;
+        pointer.style.setProperty("--pointer-tilt", `${tilt}deg`);
+      }
       const index = rules.indexAt(angle, active.length);
       if (index !== previousIndex) {
-        labelSong(active[index]);
+        if (!slowing || active[index] !== winner) labelSong(active[index]);
         if (now - previousTick >= 57) {
           tone(295 + index % 7 * 25, .047, .025);
           previousTick = now;

@@ -33,24 +33,41 @@
   }
 
   function spinMotion(start, target, count) {
-    const approach = count > 1 ? 9550 : 10900;
-    const pause = count > 1 ? 850 : 0;
-    const finalStep = count > 1 ? 500 : 0;
-    const nearStop = count > 1 ? target - turn / count : target;
-    const duration = approach + pause + finalStep;
+    const duration = 10900;
+    const slowAt = 8700;
+    const secondClickAt = 9160;
+    const rockAt = 9770;
+    const releaseAt = 10420;
+    const sector = turn / count;
+    const firstClick = target - 2.75 * sector;
+    const secondClick = target - 1.8 * sector;
+    const brink = target - .73 * sector;
+    const glide = (from, to, fraction) => from + (to - from) * fraction ** 2 * (3 - 2 * fraction);
+    const rocking = (elapsed) => {
+      if (count < 2 || elapsed < rockAt || elapsed >= releaseAt) return 0;
+      const fraction = (elapsed - rockAt) / (releaseAt - rockAt);
+      return Math.sin(4 * Math.PI * fraction) * Math.sin(Math.PI * fraction);
+    };
 
     return {
       duration,
+      slowAt,
+      pointerAt: (elapsed) => rocking(elapsed) * 9,
       angleAt(elapsed) {
         if (elapsed >= duration) return target;
-        if (elapsed < approach) {
-          const fraction = Math.max(0, elapsed) / approach;
-          return start + (nearStop - start) * (1 - (1 - fraction) ** 3.1);
+        if (count < 2 || elapsed < slowAt) {
+          const fraction = Math.max(0, elapsed) / (count < 2 ? duration : slowAt);
+          const destination = count < 2 ? target : firstClick;
+          return start + (destination - start) * (1 - (1 - fraction) ** 3.1);
         }
-        if (elapsed < approach + pause) return nearStop;
-        const fraction = (elapsed - approach - pause) / finalStep;
-        const glide = fraction * fraction * (3 - 2 * fraction);
-        return nearStop + (target - nearStop) * glide;
+        if (elapsed < secondClickAt) {
+          return glide(firstClick, secondClick, (elapsed - slowAt) / (secondClickAt - slowAt));
+        }
+        if (elapsed < rockAt) {
+          return glide(secondClick, brink, (elapsed - secondClickAt) / (rockAt - secondClickAt));
+        }
+        if (elapsed < releaseAt) return brink + .19 * sector * rocking(elapsed);
+        return glide(brink, target, (elapsed - releaseAt) / (duration - releaseAt));
       },
     };
   }
