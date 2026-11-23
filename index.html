@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#100c20">
+  <meta name="description" content="Музыкальное колесо Невинного вечера">
+  <title>Колесо · Невинный вечер</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="songs.js" defer></script>
+  <script src="wheel.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="topbar wrap">
+    <div class="wordmark"><i class="wave" aria-hidden="true"><b></b><b></b><b></b><b></b></i> Невинный вечер</div>
+    <div class="tools">
+      <button id="sound" class="quiet" type="button" aria-pressed="true">Звук вкл.</button>
+      <button id="fullscreen" class="quiet" type="button">На весь экран</button>
+    </div>
+  </header>
+  <main class="wrap">
+    <div class="layout">
+      <section class="stage" aria-label="Колесо песен">
+        <div class="stage-top"><span class="marker-dot"></span><span>Музыкальная рулетка</span></div>
+        <div class="disc">
+          <canvas id="wheel" aria-hidden="true"></canvas>
+          <div class="hub" aria-hidden="true"><i class="wave"><b></b><b></b><b></b><b></b></i></div>
+          <div class="pointer" aria-hidden="true"></div>
+        </div>
+        <div class="stage-bottom"><span id="remaining"></span><span class="signal" aria-hidden="true"></span></div>
+      </section>
+      <section class="deck" aria-label="Управление колесом">
+        <div class="play">
+          <div class="caption"><span class="marker-dot"></span><span id="status">Розыгрыш</span></div>
+          <p class="artist" id="artist" hidden></p>
+          <h1 id="title">Что споём?</h1>
+          <p class="description" id="description">Крути колесо и узнай, какая песня прозвучит следующей.</p>
+          <div class="actions">
+            <button id="spin" class="primary" type="button">Крутить колесо</button>
+            <button id="sung" class="secondary" type="button" hidden>Спели</button>
+          </div>
+          <div id="announcement" role="status" class="sr-only"></div>
+        </div>
+        <section class="history" aria-labelledby="history-title">
+          <div class="history-head">
+            <h2 id="history-title">История вечера <span id="history-count">0</span></h2>
+            <button id="reset" class="text-button" type="button" disabled>Сбросить</button>
+          </div>
+          <p id="empty">Здесь появятся выпавшие песни.</p>
+          <ol id="history"></ol>
+          <button id="undo" class="text-button undo" type="button" hidden>Вернуть последнюю спетую</button>
+        </section>
+      </section>
+    </div>
+    <p id="storage-note" class="storage-note" hidden>Браузер не сохраняет историю после закрытия страницы.</p>
+  </main>
+  <canvas id="confetti" aria-hidden="true"></canvas>
+  <dialog id="reset-dialog">
+    <form method="dialog">
+      <h2>Начать вечер заново?</h2>
+      <p>История очистится, все песни снова будут в колесе.</p>
+      <div class="actions"><button class="secondary" value="cancel" autofocus>Отмена</button><button class="primary" value="reset">Сбросить вечер</button></div>
+    </form>
+  </dialog>
+</body>
+</html>
