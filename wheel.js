@@ -32,6 +32,29 @@
     return Math.floor(wrap(-angle) / turn * count);
   }
 
+  function spinMotion(start, target, count) {
+    const approach = count > 1 ? 9550 : 10900;
+    const pause = count > 1 ? 850 : 0;
+    const finalStep = count > 1 ? 500 : 0;
+    const nearStop = count > 1 ? target - turn / count : target;
+    const duration = approach + pause + finalStep;
+
+    return {
+      duration,
+      angleAt(elapsed) {
+        if (elapsed >= duration) return target;
+        if (elapsed < approach) {
+          const fraction = Math.max(0, elapsed) / approach;
+          return start + (nearStop - start) * (1 - (1 - fraction) ** 3.1);
+        }
+        if (elapsed < approach + pause) return nearStop;
+        const fraction = (elapsed - approach - pause) / finalStep;
+        const glide = fraction * fraction * (3 - 2 * fraction);
+        return nearStop + (target - nearStop) * glide;
+      },
+    };
+  }
+
   const storageKey = "nevinny-vecher-wheel-v1";
   const initial = () => ({ draws: [], muted: false });
 
@@ -48,5 +71,5 @@
     }
   }
 
-  globalThis.VecherWheel = { weight, pick, targetAngle, indexAt, wrap, storageKey, restore };
+  globalThis.VecherWheel = { weight, pick, targetAngle, indexAt, spinMotion, wrap, storageKey, restore };
 })();

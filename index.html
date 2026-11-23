@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#100c20">
   <meta name="description" content="Музыкальное колесо Невинного вечера">
   <title>Колесо · Невинный вечер</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=2">
   <script src="songs.js" defer></script>
-  <script src="wheel.js" defer></script>
-  <script src="app.js" defer></script>
+  <script src="wheel.js?v=2" defer></script>
+  <script src="app.js?v=2" defer></script>
 </head>
 <body>
   <header class="topbar wrap">
@@ -33,8 +33,8 @@
       <section class="deck" aria-label="Управление колесом">
         <div class="play">
           <div class="caption"><span class="marker-dot"></span><span id="status">Розыгрыш</span></div>
-          <p class="artist" id="artist" hidden></p>
-          <h1 id="title">Что споём?</h1>
+          <p class="artist" id="artist"></p>
+          <div class="title-slot"><h1 id="title">Что споём?</h1></div>
           <p class="description" id="description">Крути колесо и узнай, какая песня прозвучит следующей.</p>
           <div class="actions">
             <button id="spin" class="primary" type="button">Крутить колесо</button>

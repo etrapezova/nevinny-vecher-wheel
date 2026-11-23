@@ -3,6 +3,9 @@
   const rules = globalThis.VecherWheel;
   const catalog = new Map(songs.map((song) => [song.id, song]));
   const $ = (id) => document.getElementById(id);
+  const title = $("title");
+  const titleSlot = title.parentElement;
+  const titleSizes = new Map();
   const canvas = $("wheel");
   const paint = canvas.getContext("2d");
   const celebration = $("confetti");
@@ -24,11 +27,27 @@
     }
   }
 
+  function fitTitle() {
+    const key = title.textContent;
+    if (!titleSizes.has(key)) {
+      title.style.fontSize = "";
+      if (title.offsetHeight > titleSlot.clientHeight) {
+        const baseSize = Number.parseFloat(getComputedStyle(title).fontSize);
+        let size = baseSize;
+        while (title.offsetHeight > titleSlot.clientHeight && size > baseSize * .45) {
+          size *= .86;
+          title.style.fontSize = `${size}px`;
+        }
+      }
+      titleSizes.set(key, title.style.fontSize);
+    }
+    title.style.fontSize = titleSizes.get(key);
+  }
+
   function labelSong(song) {
-    $("artist").hidden = !song;
     $("artist").textContent = song?.artist ?? "";
-    $("title").textContent = song?.title ?? (active.length ? "Что споём?" : "Все песни спеты");
-    document.querySelector(".play").classList.toggle("has-song", Boolean(song));
+    title.textContent = song?.title ?? (active.length ? "Что споём?" : "Все песни спеты");
+    fitTitle();
   }
 
   function render() {
@@ -194,7 +213,7 @@
     $("announcement").textContent = "Колесо крутится";
     const start = angle;
     const target = rules.targetAngle(start, active.indexOf(winner), active.length);
-    const duration = reduced.matches ? 0 : 11000;
+    const motion = rules.spinMotion(start, target, active.length);
     const startTime = performance.now();
     let previousIndex = -1;
     let previousTick = 0;
@@ -212,17 +231,17 @@
       [440, 554, 659].forEach((hz, index) => tone(hz, .28, .075, index * .085));
       confetti();
     }
-    if (!duration) {
+    if (reduced.matches) {
       finish();
       return;
     }
     function frame(now) {
-      const fraction = Math.min(1, (now - startTime) / duration);
-      if (fraction >= 1) {
+      const elapsed = now - startTime;
+      if (elapsed >= motion.duration) {
         finish();
         return;
       }
-      angle = start + (target - start) * (1 - (1 - fraction) ** 3.1);
+      angle = motion.angleAt(elapsed);
       const index = rules.indexAt(angle, active.length);
       if (index !== previousIndex) {
         labelSong(active[index]);
@@ -293,6 +312,10 @@
     $("fullscreen").textContent = document.fullscreenElement ? "Выйти из полного экрана" : "На весь экран";
   });
   new ResizeObserver(resize).observe(canvas);
+  new ResizeObserver(() => {
+    titleSizes.clear();
+    fitTitle();
+  }).observe(titleSlot);
   render();
   if (showing && !showing.sung) {
     const index = active.findIndex((song) => song.id === showing.id);
